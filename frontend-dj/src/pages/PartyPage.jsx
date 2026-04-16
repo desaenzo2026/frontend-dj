@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { fetchEvent, fetchLists, createList, addSongToList, updateListSong, deleteListSong } from '../api';
 import { useSocket } from '../context/SocketContext';
-import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
 export default function PartyPage() {
   const { eventId } = useParams();
@@ -22,6 +22,7 @@ export default function PartyPage() {
   const [addingSong, setAddingSong] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const qrRef = useRef(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -171,14 +172,48 @@ export default function PartyPage() {
               <div className="modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
                 <h2><QrCodeIcon className="icon-inline" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 8 }} />Código QR</h2>
                 <p style={{ color: 'var(--muted)', fontSize: '.85rem', marginBottom: 16 }}>Escanea para acceder a la lista</p>
-                <div style={{ background: '#fff', padding: 20, borderRadius: 12, display: 'inline-block' }}>
+                <div ref={qrRef} style={{ background: '#fff', padding: 24, borderRadius: 12, display: 'inline-block' }}>
                   <QRCodeSVG
                     value={`${shareBase}/share/${currentList.share_token}`}
                     size={220}
                     level="H"
                   />
+                  <p style={{ margin: '16px 0 0', color: '#000', fontWeight: 700, fontSize: '1.1rem' }}>{event?.name}</p>
+                  <p style={{ margin: '4px 0 0', color: '#555', fontSize: '.8rem' }}>Escaneá el código para pedir canciones</p>
                 </div>
-                <div className="modal-actions" style={{ justifyContent: 'center', marginTop: 20 }}>
+                <div className="modal-actions" style={{ justifyContent: 'center', marginTop: 20, gap: 10 }}>
+                  <button className="btn btn-primary" onClick={() => {
+                    const svgEl = qrRef.current?.querySelector('svg');
+                    if (!svgEl) return;
+                    const canvas = document.createElement('canvas');
+                    const padding = 48;
+                    const qrSize = 440;
+                    const textHeight = 100;
+                    canvas.width = qrSize + padding * 2;
+                    canvas.height = qrSize + padding * 2 + textHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    const svgData = new XMLSerializer().serializeToString(svgEl);
+                    const img = new Image();
+                    img.onload = () => {
+                      ctx.drawImage(img, padding, padding, qrSize, qrSize);
+                      ctx.fillStyle = '#000000';
+                      ctx.font = 'bold 28px sans-serif';
+                      ctx.textAlign = 'center';
+                      ctx.fillText(event?.name || 'Fiesta', canvas.width / 2, qrSize + padding + 40);
+                      ctx.fillStyle = '#555555';
+                      ctx.font = '18px sans-serif';
+                      ctx.fillText('Escaneá el código para pedir canciones', canvas.width / 2, qrSize + padding + 70);
+                      const link = document.createElement('a');
+                      link.download = `QR-${(event?.name || 'fiesta').replace(/\s+/g, '-')}.png`;
+                      link.href = canvas.toDataURL('image/png');
+                      link.click();
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }}>
+                    <ArrowDownTrayIcon className="icon-sm" /> Descargar
+                  </button>
                   <button className="btn btn-secondary" onClick={() => setShowQR(false)}>Cerrar</button>
                 </div>
               </div>
