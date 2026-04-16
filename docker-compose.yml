@@ -1,0 +1,54 @@
+services:
+
+  # ─── PostgreSQL ────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       djapp
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d djapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Backend ──────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend-dj
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT:            4000
+      PGHOST:          db
+      PGPORT:          5432
+      PGDATABASE:      djapp
+      PGUSER:          postgres
+      PGPASSWORD:      ${PGPASSWORD}
+      JWT_SECRET:      ${JWT_SECRET}
+      CLIENT_ORIGIN:   ${CLIENT_ORIGIN:-http://localhost}
+      NODE_ENV:        production
+    expose:
+      - "4000"
+
+  # ─── Frontend ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend-dj
+      args:
+        - VITE_PUBLIC_URL=${VITE_PUBLIC_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  pg_data:
