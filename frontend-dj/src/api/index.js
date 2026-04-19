@@ -8,6 +8,21 @@ function getToken() {
   return localStorage.getItem('dj_token');
 }
 
+// Map known backend messages to user-friendly Spanish strings
+const FRIENDLY_MESSAGES = {
+  'Credenciales incorrectas':       'Usuario o contraseña incorrectos',
+  'Invalid credentials':            'Usuario o contraseña incorrectos',
+  'usuario y contraseña requeridos': 'Completá usuario y contraseña',
+  'Unauthorized':                   'Sesión expirada. Volvé a iniciar sesión',
+  'Not found':                      'No se encontró el recurso',
+  'Forbidden':                      'No tenés permiso para esta acción',
+};
+
+function sanitizeError(raw) {
+  if (!raw || typeof raw !== 'string') return 'Ocurrió un error inesperado';
+  return FRIENDLY_MESSAGES[raw] || 'Ocurrió un error inesperado. Intentá de nuevo.';
+}
+
 async function request(method, path, body) {
   const opts = {
     method,
@@ -17,11 +32,23 @@ async function request(method, path, body) {
   if (token) opts.headers['Authorization'] = `Bearer ${token}`;
   if (body !== undefined) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${BASE}${path}`, opts);
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, opts);
+  } catch {
+    throw new Error('No se pudo conectar con el servidor');
+  }
+
   if (res.status === 204) return null;
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'API error');
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('El servidor no respondió correctamente');
+  }
+
+  if (!res.ok) throw new Error(sanitizeError(data.error));
   return data;
 }
 
@@ -71,13 +98,24 @@ export async function uploadPhoto(eventId, file, uploadedBy) {
   const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}/photos/${eventId}`, {
-    method: 'POST',
-    headers,
-    body: formData,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Error al subir foto');
+  let res;
+  try {
+    res = await fetch(`${BASE}/photos/${eventId}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+  } catch {
+    throw new Error('No se pudo conectar con el servidor');
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Error al subir la foto. Intentá de nuevo.');
+  }
+  if (!res.ok) throw new Error(sanitizeError(data.error));
   return data;
 }
 

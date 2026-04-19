@@ -20,7 +20,7 @@ export default function LoginPage() {
       await login(form.username, form.password);
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Credenciales incorrectas');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
