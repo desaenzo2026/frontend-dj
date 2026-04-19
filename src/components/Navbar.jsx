@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <span className="brand">🎧 DJ App</span>
+      <span className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>🎧 DJ App</span>
       {isAuthenticated && (
         <>
           <NavLink to="/" end>📅 <span>Agenda</span></NavLink>

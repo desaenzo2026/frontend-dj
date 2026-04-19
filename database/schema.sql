@@ -107,3 +107,19 @@ CREATE OR REPLACE TRIGGER events_updated_at
 CREATE OR REPLACE TRIGGER requests_updated_at
   BEFORE UPDATE ON song_requests
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ─────────────────────────────────────────
+-- PHOTO WALL  (event photos uploaded by attendees)
+-- ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS event_photos (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id      UUID        NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  filename      VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255),
+  uploaded_by   VARCHAR(100),
+  approved      BOOLEAN      NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_photos_event ON event_photos(event_id);
+CREATE INDEX IF NOT EXISTS idx_photos_created ON event_photos(created_at DESC);

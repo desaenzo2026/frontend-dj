@@ -15,7 +15,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <span className="brand"><img src="/logo.jpg" alt="Anich Sistemas" className="navbar-logo" /> Anich Sistemas</span>
+      <span className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}><img src="/logo.jpg" alt="Anich Sistemas" className="navbar-logo" /> Anich Sistemas</span>
       {isAuthenticated && (
         <>
           <NavLink to="/" end><CalendarDaysIcon className="icon-sm" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} /> <span>Agenda</span></NavLink>

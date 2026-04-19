@@ -6,12 +6,19 @@ const helmet   = require('helmet');
 const cors     = require('cors');
 const rateLimit = require('express-rate-limit');
 
+const path           = require('path');
+const fs             = require('fs');
 const eventsRouter   = require('./routes/events');
 const listsRouter    = require('./routes/songLists');
 const requestsRouter = require('./routes/songRequests');
 const authRouter     = require('./routes/auth');
 const searchRouter   = require('./routes/search');
+const photosRouter   = require('./routes/photos');
 const socketHandlers = require('./socket/handlers');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'uploads', 'photos');
+fs.mkdirSync(uploadsDir, { recursive: true });
 
 const app    = express();
 const server = http.createServer(app);
@@ -58,12 +65,16 @@ app.use(express.json({ limit: '50kb' }));
 const limiter = rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false });
 app.use('/api', limiter);
 
+// ─── Static files (uploaded photos) ──────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/events',   eventsRouter);
 app.use('/api/lists',    listsRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/auth',     authRouter);
 app.use('/api/search',   searchRouter);
+app.use('/api/photos',   photosRouter);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

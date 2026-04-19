@@ -1,8 +1,9 @@
 /**
  * Socket.IO handlers
  * Rooms:
- *   event:<eventId>  — live requests & votes
- *   list:<listId>    — collaborative song list
+ *   event:<eventId>      — live requests & votes
+ *   list:<listId>        — collaborative song list
+ *   photowall:<eventId>  — photo wall projector screen
  */
 module.exports = function registerSocketHandlers(io) {
   io.on('connection', (socket) => {
@@ -20,8 +21,16 @@ module.exports = function registerSocketHandlers(io) {
       }
     });
 
+    // Join a photowall room (projector screen)
+    socket.on('join:photowall', (eventId) => {
+      if (typeof eventId === 'string' && /^[0-9a-f-]{36}$/.test(eventId)) {
+        socket.join(`photowall:${eventId}`);
+      }
+    });
+
     socket.on('leave:event', (eventId) => socket.leave(`event:${eventId}`));
     socket.on('leave:list',  (listId)  => socket.leave(`list:${listId}`));
+    socket.on('leave:photowall', (eventId) => socket.leave(`photowall:${eventId}`));
 
     socket.on('disconnect', () => {
       // Socket.IO cleans up rooms automatically

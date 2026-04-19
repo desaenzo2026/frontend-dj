@@ -8,6 +8,8 @@ import AgendaPage from './pages/AgendaPage';
 import PartyPage from './pages/PartyPage';
 import LiveRequestsPage from './pages/LiveRequestsPage';
 import SharedListPage from './pages/SharedListPage';
+import PhotoWallPage from './pages/PhotoWallPage';
+import PhotoUploadPage from './pages/PhotoUploadPage';
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
             <Route path="/party/:eventId"  element={<ProtectedRoute><PartyPage /></ProtectedRoute>} />
             <Route path="/live/:eventId"   element={<LiveRequestsPage />} />
             <Route path="/share/:token"    element={<SharedListPage />} />
+            <Route path="/photowall/:eventId" element={<ProtectedRoute><PhotoWallPage /></ProtectedRoute>} />
+            <Route path="/photos/upload/:eventId" element={<PhotoUploadPage />} />
           </Routes>
         </div>
       </SocketProvider>

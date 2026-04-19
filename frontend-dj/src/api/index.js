@@ -58,3 +58,27 @@ export const loginDJ = (username, password) => post('/auth/login', { username, p
 
 // ─── YouTube autocomplete ──────────────────────────
 export const searchYoutube = (q) => get(`/search?q=${encodeURIComponent(q)}`);
+
+// ─── Photos (Photo Wall) ──────────────────────────
+export const fetchPhotos = (eventId) => get(`/photos/${eventId}`);
+
+export async function uploadPhoto(eventId, file, uploadedBy) {
+  const formData = new FormData();
+  formData.append('photo', file);
+  if (uploadedBy) formData.append('uploaded_by', uploadedBy);
+
+  const token = localStorage.getItem('dj_token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}/photos/${eventId}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error al subir foto');
+  return data;
+}
+
+export const deletePhoto = (eventId, photoId) => del(`/photos/${eventId}/${photoId}`);

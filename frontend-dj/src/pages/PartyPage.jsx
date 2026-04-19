@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { fetchEvent, fetchLists, createList, addSongToList, updateListSong, deleteListSong } from '../api';
 import { useSocket } from '../context/SocketContext';
-import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon, ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 export default function PartyPage() {
   const { eventId } = useParams();
@@ -120,6 +120,9 @@ export default function PartyPage() {
             {event && <p style={{ color: 'var(--muted)', fontSize: '.9rem', marginTop: 4 }}>{event.title} · {event.venue}</p>}
           </div>
         </div>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.open(`/photowall/${eventId}`, '_blank')}>
+          <PhotoIcon className="icon-sm" /> Photo Wall
+        </button>
       </div>
 
       {/* Create new list */}
