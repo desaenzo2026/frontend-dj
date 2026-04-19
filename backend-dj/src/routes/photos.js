@@ -32,32 +32,35 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
 });
 
-// ─── PUBLIC: Upload a photo ──────────────────────────────────────────────────
-router.post('/:eventId', upload.single('photo'), async (req, res, next) => {
+// ─── PUBLIC: Upload photos (1 to 10) ─────────────────────────────────────────
+router.post('/:eventId', upload.array('photo', 10), async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const uploadedBy = req.body.uploaded_by || 'Anónimo';
 
-    if (!req.file) return res.status(400).json({ error: 'No se envió ninguna foto' });
+    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No se envió ninguna foto' });
 
     // Verify event exists
     const evResult = await pool.query('SELECT id FROM events WHERE id = $1', [eventId]);
     if (evResult.rows.length === 0) return res.status(404).json({ error: 'Evento no encontrado' });
 
-    const { rows } = await pool.query(
-      `INSERT INTO event_photos (event_id, filename, original_name, uploaded_by)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [eventId, req.file.filename, req.file.originalname, uploadedBy]
-    );
+    const photos = [];
+    for (const file of req.files) {
+      const { rows } = await pool.query(
+        `INSERT INTO event_photos (event_id, filename, original_name, uploaded_by)
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [eventId, file.filename, file.originalname, uploadedBy]
+      );
+      const photo = rows[0];
+      photos.push(photo);
 
-    const photo = rows[0];
+      // Emit to projector screens
+      const io = req.app.get('io');
+      io.to(`photowall:${eventId}`).emit('photo:new', photo);
+    }
 
-    // Emit to projector screens
-    const io = req.app.get('io');
-    io.to(`photowall:${eventId}`).emit('photo:new', photo);
-
-    res.status(201).json(photo);
+    res.status(201).json(photos.length === 1 ? photos[0] : photos);
   } catch (err) {
     next(err);
   }

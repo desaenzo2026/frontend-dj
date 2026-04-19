@@ -89,9 +89,10 @@ export const searchYoutube = (q) => get(`/search?q=${encodeURIComponent(q)}`);
 // ─── Photos (Photo Wall) ──────────────────────────
 export const fetchPhotos = (eventId) => get(`/photos/${eventId}`);
 
-export async function uploadPhoto(eventId, file, uploadedBy) {
+export async function uploadPhoto(eventId, files, uploadedBy) {
   const formData = new FormData();
-  formData.append('photo', file);
+  const fileList = Array.isArray(files) ? files : [files];
+  fileList.forEach(f => formData.append('photo', f));
   if (uploadedBy) formData.append('uploaded_by', uploadedBy);
 
   const token = localStorage.getItem('dj_token');

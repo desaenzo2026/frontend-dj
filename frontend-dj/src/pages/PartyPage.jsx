@@ -121,7 +121,7 @@ export default function PartyPage() {
           </div>
         </div>
         <button className="btn btn-secondary btn-sm" onClick={() => window.open(`/photowall/${eventId}`, '_blank')}>
-          <PhotoIcon className="icon-sm" /> Photo Wall
+          <PhotoIcon className="icon-sm" /> Muro de fotos
         </button>
       </div>
 

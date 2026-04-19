@@ -14,6 +14,9 @@ RUN addgroup -S djapp && adduser -S djapp -G djapp
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Ensure uploads directory exists
+RUN mkdir -p /app/uploads/photos
+
 RUN chown -R djapp:djapp /app
 USER djapp
 

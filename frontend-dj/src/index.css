@@ -598,6 +598,102 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   border-radius: 8px;
 }
 
+/* Action buttons (gallery + camera) */
+.photo-upload-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.photo-upload-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: none;
+  color: var(--muted);
+  font-size: .85rem;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, color .2s;
+}
+.photo-upload-action-btn:hover {
+  border-color: var(--accent);
+  background: #f5f3ff;
+  color: var(--accent);
+}
+
+/* Previews grid */
+.photo-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.photo-upload-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.photo-upload-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-upload-thumb-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,.6);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Camera */
+.photo-camera-wrapper {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+.photo-camera-video {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+.photo-camera-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,.5);
+}
+.photo-camera-capture {
+  width: 56px;
+  height: 56px;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+.photo-camera-close {
+  color: #fff !important;
+  font-size: .85rem;
+}
+
 .photo-upload-btn {
   width: 100%;
   justify-content: center;

@@ -35,6 +35,8 @@ services:
       JWT_SECRET:      ${JWT_SECRET}
       CLIENT_ORIGIN:   ${CLIENT_ORIGIN:-http://localhost}
       NODE_ENV:        production
+    volumes:
+      - uploads_data:/app/uploads
     expose:
       - "4000"
 
@@ -52,3 +54,4 @@ services:
 
 volumes:
   pg_data:
+  uploads_data:

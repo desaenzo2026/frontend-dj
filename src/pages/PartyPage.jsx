@@ -1,11 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { fetchEvent, fetchLists, createList, addSongToList, updateListSong, deleteListSong } from '../api';
 import { useSocket } from '../context/SocketContext';
+import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon, ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 export default function PartyPage() {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const { socket } = useSocket();
+  const shareBase = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
 
   const [event, setEvent]   = useState(null);
   const [lists, setLists]   = useState([]);
@@ -17,6 +21,8 @@ export default function PartyPage() {
   const [songForm, setSongForm] = useState({ title: '', artist: '', added_by: '' });
   const [addingSong, setAddingSong] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const qrRef = useRef(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -94,7 +100,7 @@ export default function PartyPage() {
   };
 
   const copyShareLink = (token) => {
-    const url = `${window.location.origin}/share/${token}`;
+    const url = `${shareBase}/share/${token}`;
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
 
@@ -105,10 +111,18 @@ export default function PartyPage() {
   return (
     <main className="page">
       <div className="page-header">
-        <div>
-          <h1>📋 Lista colaborativa</h1>
-          {event && <p style={{ color: '#888', fontSize: '.9rem', marginTop: 4 }}>{event.title} · {event.venue}</p>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')} title="Volver">
+            <ArrowLeftIcon className="icon-sm" />
+          </button>
+          <div>
+            <h1><ListBulletIcon className="icon-inline" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 8 }} />Lista colaborativa</h1>
+            {event && <p style={{ color: 'var(--muted)', fontSize: '.9rem', marginTop: 4 }}>{event.title} · {event.venue}</p>}
+          </div>
         </div>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.open(`/photowall/${eventId}`, '_blank')}>
+          <PhotoIcon className="icon-sm" /> Muro de fotos
+        </button>
       </div>
 
       {/* Create new list */}
@@ -120,7 +134,7 @@ export default function PartyPage() {
             placeholder="Nombre de la lista (ej: Set 22:00-00:00)"
             style={{ flex: 1 }}
           />
-          <button type="submit" className="btn btn-primary btn-sm">+ Crear</button>
+          <button type="submit" className="btn btn-primary btn-sm"><PlusIcon className="icon-sm" /> Crear</button>
         </form>
       </div>
 
@@ -143,14 +157,71 @@ export default function PartyPage() {
         <>
           {/* Share link */}
           <div className="card" style={{ padding: '14px 18px' }}>
-            <div style={{ fontSize: '.85rem', color: '#888', marginBottom: 6 }}>🔗 Enlace para compartir con el público:</div>
+            <div style={{ fontSize: '.85rem', color: 'var(--muted)', marginBottom: 6 }}><LinkIcon className="icon-sm" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} /> Enlace para compartir con el público:</div>
             <div className="share-box">
-              <input readOnly value={`${window.location.origin}/share/${currentList.share_token}`} />
+              <input readOnly value={`${shareBase}/share/${currentList.share_token}`} />
               <button className="btn btn-secondary btn-sm" onClick={() => copyShareLink(currentList.share_token)}>
-                {copied ? '✅ Copiado' : '📋 Copiar'}
+                {copied ? <><CheckIcon className="icon-sm" /> Copiado</> : <><ClipboardDocumentIcon className="icon-sm" /> Copiar</>}
+              </button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowQR(true)}>
+                <QrCodeIcon className="icon-sm" /> QR
               </button>
             </div>
           </div>
+
+          {/* QR Code Modal */}
+          {showQR && (
+            <div className="modal-overlay" onClick={() => setShowQR(false)}>
+              <div className="modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                <h2><QrCodeIcon className="icon-inline" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 8 }} />Código QR</h2>
+                <p style={{ color: 'var(--muted)', fontSize: '.85rem', marginBottom: 16 }}>Escanea para acceder a la lista</p>
+                <div ref={qrRef} style={{ background: '#fff', padding: 24, borderRadius: 12, display: 'inline-block' }}>
+                  <QRCodeSVG
+                    value={`${shareBase}/share/${currentList.share_token}`}
+                    size={220}
+                    level="H"
+                  />
+                  <p style={{ margin: '16px 0 0', color: '#000', fontWeight: 700, fontSize: '1.1rem' }}>{event?.name}</p>
+                  <p style={{ margin: '4px 0 0', color: '#555', fontSize: '.8rem' }}>Escaneá el código para pedir canciones</p>
+                </div>
+                <div className="modal-actions" style={{ justifyContent: 'center', marginTop: 20, gap: 10 }}>
+                  <button className="btn btn-primary" onClick={() => {
+                    const svgEl = qrRef.current?.querySelector('svg');
+                    if (!svgEl) return;
+                    const canvas = document.createElement('canvas');
+                    const padding = 48;
+                    const qrSize = 440;
+                    const textHeight = 100;
+                    canvas.width = qrSize + padding * 2;
+                    canvas.height = qrSize + padding * 2 + textHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    const svgData = new XMLSerializer().serializeToString(svgEl);
+                    const img = new Image();
+                    img.onload = () => {
+                      ctx.drawImage(img, padding, padding, qrSize, qrSize);
+                      ctx.fillStyle = '#000000';
+                      ctx.font = 'bold 28px sans-serif';
+                      ctx.textAlign = 'center';
+                      ctx.fillText(event?.name || 'Fiesta', canvas.width / 2, qrSize + padding + 40);
+                      ctx.fillStyle = '#555555';
+                      ctx.font = '18px sans-serif';
+                      ctx.fillText('Escaneá el código para pedir canciones', canvas.width / 2, qrSize + padding + 70);
+                      const link = document.createElement('a');
+                      link.download = `QR-${(event?.name || 'fiesta').replace(/\s+/g, '-')}.png`;
+                      link.href = canvas.toDataURL('image/png');
+                      link.click();
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }}>
+                    <ArrowDownTrayIcon className="icon-sm" /> Descargar
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => setShowQR(false)}>Cerrar</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Add song form */}
           <div className="card">
@@ -171,7 +242,7 @@ export default function PartyPage() {
                 </div>
               </div>
               <button type="submit" className="btn btn-primary" disabled={addingSong}>
-                {addingSong ? 'Añadiendo…' : '+ Añadir canción'}
+                {addingSong ? 'Añadiendo…' : <><PlusIcon className="icon-sm" /> Añadir canción</>}
               </button>
             </form>
           </div>
@@ -179,14 +250,14 @@ export default function PartyPage() {
           {/* Song list */}
           {(!currentList.songs || currentList.songs.length === 0) && (
             <div className="empty-state">
-              <span className="icon">🎵</span>
+              <MusicalNoteIcon style={{ width: 48, height: 48, margin: '0 auto 12px', display: 'block', color: 'var(--muted)' }} />
               Lista vacía. ¡Agrega canciones!
             </div>
           )}
 
           {(currentList.songs || []).map(song => (
             <div className={`song-item${song.played ? ' played' : ''}`} key={song.id}>
-              <div style={{ fontSize: '1.2rem' }}>{song.played ? '✅' : '🎵'}</div>
+              <div>{song.played ? <CheckCircleIcon className="icon-inline" style={{ color: 'var(--success)' }} /> : <MusicalNoteIcon className="icon-inline" style={{ color: 'var(--accent)' }} />}</div>
               <div className="song-info">
                 <div className="song-title">{song.title}</div>
                 {song.artist && <div className="song-artist">{song.artist}</div>}
@@ -196,7 +267,7 @@ export default function PartyPage() {
                 <button className="btn btn-ghost btn-sm" onClick={() => togglePlayed(currentList, song)}>
                   {song.played ? 'Desmarcar' : 'Tocada'}
                 </button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(currentList, song.id)}>🗑️</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(currentList, song.id)}><TrashIcon className="icon-sm" /></button>
               </div>
             </div>
           ))}
@@ -205,7 +276,7 @@ export default function PartyPage() {
 
       {lists.length === 0 && !loading && (
         <div className="empty-state">
-          <span className="icon">📝</span>
+          <DocumentTextIcon style={{ width: 48, height: 48, margin: '0 auto 12px', display: 'block', color: 'var(--muted)' }} />
           Sin listas aún. Crea una arriba.
         </div>
       )}
