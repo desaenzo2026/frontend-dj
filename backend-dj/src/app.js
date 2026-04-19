@@ -89,6 +89,29 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
+// ─── Ensure event_photos table exists ─────────────────────────────────────────
+const pool = require('./config/database');
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS event_photos (
+        id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_id      UUID        NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+        filename      VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255),
+        uploaded_by   VARCHAR(100),
+        approved      BOOLEAN      NOT NULL DEFAULT true,
+        created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_photos_event ON event_photos(event_id);
+      CREATE INDEX IF NOT EXISTS idx_photos_created ON event_photos(created_at DESC);
+    `);
+    console.log('✓ event_photos table ready');
+  } catch (err) {
+    console.error('Failed to ensure event_photos table:', err.message);
+  }
+})();
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = Number(process.env.PORT) || 4000;
 server.listen(PORT, () => console.log(`DJ API running on http://localhost:${PORT}`));

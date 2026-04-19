@@ -1,11 +1,11 @@
--- DJ App Database Schema
+﻿-- DJ App Database Schema
 -- Run: psql -U postgres -d djapp -f schema.sql
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- USERS  (DJ accounts)
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS users (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   username      VARCHAR(100) UNIQUE NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- EVENTS
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS events (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   title         VARCHAR(255) NOT NULL,
@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS events (
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- SONG LISTS  (collaborative, shareable)
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS song_lists (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      UUID        REFERENCES events(id) ON DELETE CASCADE,
@@ -54,9 +54,9 @@ CREATE TABLE IF NOT EXISTS list_songs (
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- LIVE SONG REQUESTS  (real-time ranking)
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS song_requests (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      UUID        NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -79,9 +79,9 @@ CREATE TABLE IF NOT EXISTS request_votes (
   UNIQUE (request_id, voter_token)
 );
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- INDEXES
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE INDEX IF NOT EXISTS idx_events_date        ON events(event_date);
 CREATE INDEX IF NOT EXISTS idx_song_lists_event   ON song_lists(event_id);
 CREATE INDEX IF NOT EXISTS idx_list_songs_list    ON list_songs(list_id);
@@ -89,9 +89,9 @@ CREATE INDEX IF NOT EXISTS idx_requests_event     ON song_requests(event_id);
 CREATE INDEX IF NOT EXISTS idx_requests_votes     ON song_requests(votes DESC);
 CREATE INDEX IF NOT EXISTS idx_votes_request      ON request_votes(request_id);
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- AUTO-UPDATE updated_at
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -108,9 +108,9 @@ CREATE OR REPLACE TRIGGER requests_updated_at
   BEFORE UPDATE ON song_requests
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- PHOTO WALL  (event photos uploaded by attendees)
--- ─────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS event_photos (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      UUID        NOT NULL REFERENCES events(id) ON DELETE CASCADE,
