@@ -3,9 +3,14 @@ import { useParams } from 'react-router-dom';
 import { uploadPhoto } from '../api';
 import { CameraIcon, CheckCircleIcon, XMarkIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
+const hasMediaDevices = typeof navigator !== 'undefined'
+  && navigator.mediaDevices
+  && typeof navigator.mediaDevices.getUserMedia === 'function';
+
 export default function PhotoUploadPage() {
   const { eventId } = useParams();
   const fileRef = useRef(null);
+  const cameraFileRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -33,6 +38,11 @@ export default function PhotoUploadPage() {
 
   const startCamera = useCallback(async () => {
     setError('');
+    if (!hasMediaDevices) {
+      // Fallback: open native camera via file input with capture attribute
+      cameraFileRef.current?.click();
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -47,7 +57,8 @@ export default function PhotoUploadPage() {
         }
       });
     } catch {
-      setError('No se pudo acceder a la cámara');
+      // getUserMedia failed — fallback to native camera capture
+      cameraFileRef.current?.click();
     }
   }, []);
 
@@ -160,6 +171,15 @@ export default function PhotoUploadPage() {
             type="file"
             accept="image/*"
             multiple
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          {/* Hidden input for native camera capture (mobile fallback when no getUserMedia) */}
+          <input
+            ref={cameraFileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
