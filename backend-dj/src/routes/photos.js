@@ -20,9 +20,10 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (_req, file, cb) => {
-  const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) return cb(null, true);
+  if (allowedExts.includes(ext) || allowedMimes.includes(file.mimetype)) return cb(null, true);
   cb(new Error('Tipo de archivo no permitido'));
 };
 

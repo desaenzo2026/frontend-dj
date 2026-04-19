@@ -18,9 +18,12 @@ export default function PhotoWallPage() {
   const publicUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
   const uploadUrl = `${publicUrl}/photos/upload/${eventId}`;
 
-  // Load existing photos
+  // Load existing photos + poll every 8s as fallback
   useEffect(() => {
-    fetchPhotos(eventId).then(setPhotos).catch(console.error);
+    const load = () => fetchPhotos(eventId).then(setPhotos).catch(console.error);
+    load();
+    const poll = setInterval(load, 8000);
+    return () => clearInterval(poll);
   }, [eventId]);
 
   // Socket: listen for new/removed photos
@@ -30,7 +33,10 @@ export default function PhotoWallPage() {
     s.emit('join:photowall', eventId);
 
     const onNew = (photo) => {
-      setPhotos((prev) => [photo, ...prev]);
+      setPhotos((prev) => {
+        if (prev.some(p => p.id === photo.id)) return prev;
+        return [photo, ...prev];
+      });
     };
     const onRemoved = ({ id }) => {
       setPhotos((prev) => prev.filter((p) => p.id !== id));

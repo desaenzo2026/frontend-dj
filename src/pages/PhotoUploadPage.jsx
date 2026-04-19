@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 import { uploadPhoto } from '../api';
 import { CameraIcon, CheckCircleIcon, XMarkIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
-const hasMediaDevices = typeof navigator !== 'undefined'
+const canUseCamera = typeof window !== 'undefined'
+  && window.isSecureContext
+  && typeof navigator !== 'undefined'
   && navigator.mediaDevices
   && typeof navigator.mediaDevices.getUserMedia === 'function';
 
@@ -38,8 +40,8 @@ export default function PhotoUploadPage() {
 
   const startCamera = useCallback(async () => {
     setError('');
-    if (!hasMediaDevices) {
-      // Fallback: open native camera via file input with capture attribute
+    if (!canUseCamera) {
+      // Not HTTPS or no getUserMedia — open native camera directly (must be sync from user gesture)
       cameraFileRef.current?.click();
       return;
     }
@@ -57,7 +59,7 @@ export default function PhotoUploadPage() {
         }
       });
     } catch {
-      // getUserMedia failed — fallback to native camera capture
+      // getUserMedia failed — open native camera capture
       cameraFileRef.current?.click();
     }
   }, []);
