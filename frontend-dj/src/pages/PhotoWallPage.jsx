@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { fetchPhotos } from '../api';
+import { fetchPhotos, fetchEvent } from '../api';
 import { useSocket } from '../context/SocketContext';
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
@@ -13,10 +13,18 @@ export default function PhotoWallPage() {
   const { socket } = useSocket();
   const [photos, setPhotos] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [eventName, setEventName] = useState('');
+  const [imageReady, setImageReady] = useState(false);
   const intervalRef = useRef(null);
+  const preloadedRef = useRef(new Set());
 
   const publicUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
   const uploadUrl = `${publicUrl}/photos/upload/${eventId}`;
+
+  // Fetch event name
+  useEffect(() => {
+    fetchEvent(eventId).then(ev => setEventName(ev.title || '')).catch(console.error);
+  }, [eventId]);
 
   // Load existing photos + poll every 8s as fallback
   useEffect(() => {
@@ -25,6 +33,22 @@ export default function PhotoWallPage() {
     const poll = setInterval(load, 8000);
     return () => clearInterval(poll);
   }, [eventId]);
+
+  // Preload images ahead of the current index
+  const preloadImage = useCallback((photo) => {
+    if (!photo || preloadedRef.current.has(photo.id)) return;
+    const img = new Image();
+    img.src = `${UPLOADS_BASE}/uploads/photos/${photo.filename}`;
+    preloadedRef.current.add(photo.id);
+  }, []);
+
+  useEffect(() => {
+    // Preload current + next few images
+    for (let offset = 0; offset < Math.min(3, photos.length); offset++) {
+      const idx = (currentIndex + offset) % photos.length;
+      preloadImage(photos[idx]);
+    }
+  }, [currentIndex, photos, preloadImage]);
 
   // Socket: listen for new/removed photos
   useEffect(() => {
@@ -56,6 +80,7 @@ export default function PhotoWallPage() {
   useEffect(() => {
     if (photos.length <= 1) return;
     intervalRef.current = setInterval(() => {
+      setImageReady(false);
       setCurrentIndex((i) => (i + 1) % photos.length);
     }, 5000);
     return () => clearInterval(intervalRef.current);
@@ -79,12 +104,17 @@ export default function PhotoWallPage() {
       {/* Photo display */}
       <div className="photowall-display">
         {currentPhoto ? (
-          <img
-            key={currentPhoto.id}
-            src={`${UPLOADS_BASE}/uploads/photos/${currentPhoto.filename}`}
-            alt={currentPhoto.original_name || 'Foto del evento'}
-            className="photowall-image"
-          />
+          <div className="photowall-photo-wrapper">
+            {!imageReady && <div className="photowall-loader" />}
+            <img
+              key={currentPhoto.id}
+              src={`${UPLOADS_BASE}/uploads/photos/${currentPhoto.filename}`}
+              alt={currentPhoto.original_name || 'Foto del evento'}
+              className={`photowall-image${imageReady ? '' : ' photowall-image--loading'}`}
+              onLoad={() => setImageReady(true)}
+            />
+            {eventName && <p className="photowall-event-name">{eventName}</p>}
+          </div>
         ) : (
           <div className="photowall-empty">
             <p>📸</p>

@@ -509,10 +509,51 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 
 .photowall-image {
   max-width: 90%;
-  max-height: 90%;
+  max-height: 80%;
   object-fit: contain;
   border-radius: 12px;
   animation: photoFadeIn .8s ease;
+}
+
+.photowall-image--loading {
+  opacity: 0;
+  position: absolute;
+}
+
+.photowall-photo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.photowall-loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255,255,255,.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.photowall-event-name {
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 16px;
+  padding: 8px 24px;
+  background: rgba(0,0,0,.55);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  text-align: center;
+  letter-spacing: .3px;
 }
 
 @keyframes photoFadeIn {
