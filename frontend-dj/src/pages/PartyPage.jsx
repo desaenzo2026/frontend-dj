@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { fetchEvent, fetchLists, createList, addSongToList, updateListSong, deleteListSong } from '../api';
+import { fetchEvent, fetchLists, createList, addSongToList, updateListSong, deleteListSong, buildAllPhotosDownloadUrl } from '../api';
 import { useSocket } from '../context/SocketContext';
 import { ListBulletIcon, PlusIcon, LinkIcon, ClipboardDocumentIcon, CheckIcon, QrCodeIcon, MusicalNoteIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon, ArrowLeftIcon, ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
@@ -120,9 +120,14 @@ export default function PartyPage() {
             {event && <p style={{ color: 'var(--muted)', fontSize: '.9rem', marginTop: 4 }}>{event.title} · {event.venue}</p>}
           </div>
         </div>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.open(`/photowall/${eventId}`, '_blank')}>
-          <PhotoIcon className="icon-sm" /> Muro de fotos
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <a className="btn btn-secondary btn-sm" href={buildAllPhotosDownloadUrl(eventId)} download>
+            <ArrowDownTrayIcon className="icon-sm" /> Descargar fotos
+          </a>
+          <button className="btn btn-secondary btn-sm" onClick={() => window.open(`/photowall/${eventId}`, '_blank')}>
+            <PhotoIcon className="icon-sm" /> Muro de fotos
+          </button>
+        </div>
       </div>
 
       {/* Create new list */}

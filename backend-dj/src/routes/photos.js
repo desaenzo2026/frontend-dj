@@ -50,7 +50,7 @@ async function applyWatermark(filePath) {
   const logoOverlay = await sharp(WATERMARK_LOGO_PATH)
     .resize({ width: logoWidth, withoutEnlargement: true })
     .png()
-    .ensureAlpha(0.28)
+    .ensureAlpha(0.65)
     .toBuffer();
 
   const ext = path.extname(filePath) || '.jpg';
