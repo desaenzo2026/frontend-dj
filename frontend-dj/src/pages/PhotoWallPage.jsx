@@ -95,6 +95,17 @@ export default function PhotoWallPage() {
 
   return (
     <div className="photowall-screen">
+      {/* Logo branding overlay */}
+      <div style={{
+        position: 'fixed',
+        top: 16,
+        left: 16,
+        zIndex: 40,
+        opacity: 0.85,
+      }}>
+        <img src="/logo.jpg" alt="Anich Sistemas" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 12px rgba(0,0,0,0.5)' }} />
+      </div>
+
       {/* QR Section */}
       <div className="photowall-qr-section">
         <QRCodeSVG value={uploadUrl} size={180} bgColor="transparent" fgColor="#ffffff" />
