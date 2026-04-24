@@ -88,6 +88,8 @@ export const searchYoutube = (q) => get(`/search?q=${encodeURIComponent(q)}`);
 
 // ─── Photos (Photo Wall) ──────────────────────────
 export const fetchPhotos = (eventId) => get(`/photos/${eventId}`);
+export const buildPhotoDownloadUrl = (eventId, photoId) => `${BASE}/photos/${eventId}/${photoId}/download`;
+export const buildAllPhotosDownloadUrl = (eventId) => `${BASE}/photos/${eventId}/download/all`;
 
 export async function uploadPhoto(eventId, files, uploadedBy) {
   const formData = new FormData();

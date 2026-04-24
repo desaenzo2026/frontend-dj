@@ -15,6 +15,7 @@ const authRouter     = require('./routes/auth');
 const searchRouter   = require('./routes/search');
 const photosRouter   = require('./routes/photos');
 const socketHandlers = require('./socket/handlers');
+const { startPhotoCleanupJob } = require('./services/photoMaintenance');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '..', 'uploads', 'photos');
@@ -107,6 +108,7 @@ const pool = require('./config/database');
       CREATE INDEX IF NOT EXISTS idx_photos_created ON event_photos(created_at DESC);
     `);
     console.log('✓ event_photos table ready');
+    startPhotoCleanupJob(io);
   } catch (err) {
     console.error('Failed to ensure event_photos table:', err.message);
   }
