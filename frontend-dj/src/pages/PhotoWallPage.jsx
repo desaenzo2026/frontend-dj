@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { fetchPhotos, fetchEvent, buildPhotoDownloadUrl, buildAllPhotosDownloadUrl } from '../api';
+import { fetchPhotos, fetchEvent } from '../api';
 import { useSocket } from '../context/SocketContext';
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
@@ -131,43 +131,6 @@ export default function PhotoWallPage() {
         </div>
       )}
 
-      {currentPhoto && (
-        <div
-          style={{
-            position: 'fixed',
-            right: 16,
-            bottom: 16,
-            zIndex: 30,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-          }}
-        >
-          <a
-            className="btn btn-ghost"
-            href={buildAllPhotosDownloadUrl(eventId)}
-            style={{
-              background: 'rgba(0, 0, 0, 0.55)',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              color: '#fff',
-            }}
-          >
-            Descargar todas (ZIP)
-          </a>
-          <a
-            className="btn btn-ghost"
-            href={buildPhotoDownloadUrl(eventId, currentPhoto.id)}
-            download={currentPhoto.original_name || undefined}
-            style={{
-              background: 'rgba(0, 0, 0, 0.5)',
-              borderColor: 'rgba(255, 255, 255, 0.28)',
-              color: '#fff',
-            }}
-          >
-            Descargar foto
-          </a>
-        </div>
-      )}
     </div>
   );
 }
