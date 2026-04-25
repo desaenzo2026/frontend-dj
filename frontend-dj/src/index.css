@@ -443,8 +443,10 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   list-style: none;
-  z-index: 50;
+  z-index: 400;
   overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
   box-shadow: 0 4px 16px rgba(0,0,0,.1);
 }
 .autocomplete-list li {
@@ -459,6 +461,14 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 }
 .autocomplete-list li:hover { background: var(--surface2); }
 .autocomplete-list li:active { background: var(--surface2); }
+.autocomplete-list li.is-muted {
+  cursor: default;
+  color: var(--muted);
+}
+.autocomplete-list li.is-muted:hover,
+.autocomplete-list li.is-muted:active {
+  background: transparent;
+}
 
 /* ─── Icon helper ──────────────────────────────── */
 .icon-inline { width: 20px; height: 20px; flex-shrink: 0; }

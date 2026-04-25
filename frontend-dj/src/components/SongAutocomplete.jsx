@@ -5,23 +5,45 @@ import { MusicalNoteIcon } from '@heroicons/react/24/outline';
 export default function SongAutocomplete({ value, onChange, onSelect, placeholder = 'Nombre de la canción' }) {
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen]               = useState(false);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState('');
   const debounceRef                   = useRef(null);
   const selectingRef                  = useRef(false);
+  const requestSeqRef                 = useRef(0);
 
   useEffect(() => {
-    if (!value.trim() || value.length < 2) {
+    const query = value.trim();
+    if (!query) {
       setSuggestions([]);
       setOpen(false);
+      setLoading(false);
+      setError('');
       return;
     }
+
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
+      const requestId = ++requestSeqRef.current;
+      setLoading(true);
+      setError('');
+
       try {
-        const results = await searchYoutube(value);
-        setSuggestions(results);
-        setOpen(results.length > 0);
+        const results = await searchYoutube(query);
+        if (requestSeqRef.current !== requestId) return;
+
+        const normalized = Array.isArray(results)
+          ? results.filter((s) => typeof s === 'string' && s.trim())
+          : [];
+
+        setSuggestions(normalized);
+        setOpen(true);
       } catch {
+        if (requestSeqRef.current !== requestId) return;
         setSuggestions([]);
+        setError('No se pudieron cargar sugerencias');
+        setOpen(true);
+      } finally {
+        if (requestSeqRef.current === requestId) setLoading(false);
       }
     }, 350);
     return () => clearTimeout(debounceRef.current);
@@ -52,13 +74,18 @@ export default function SongAutocomplete({ value, onChange, onSelect, placeholde
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        onFocus={() => value.trim() && setOpen(true)}
         onBlur={handleBlur}
         autoComplete="off"
       />
       {open && (
         <ul className="autocomplete-list">
-          {suggestions.map((s, i) => (
+          {loading && <li className="is-muted">Buscando...</li>}
+          {!loading && error && <li className="is-muted">{error}</li>}
+          {!loading && !error && suggestions.length === 0 && (
+            <li className="is-muted">Sin sugerencias</li>
+          )}
+          {!loading && !error && suggestions.map((s, i) => (
             <li key={i} onPointerDown={(e) => { e.preventDefault(); select(s); }}>
               <MusicalNoteIcon className="icon-sm" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />{s}
             </li>
