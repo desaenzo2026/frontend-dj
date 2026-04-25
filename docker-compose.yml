@@ -34,6 +34,7 @@ services:
       PGPASSWORD:      ${PGPASSWORD}
       JWT_SECRET:      ${JWT_SECRET}
       CLIENT_ORIGIN:   ${CLIENT_ORIGIN:-http://localhost}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
       NODE_ENV:        production
     volumes:
       - uploads_data:/app/uploads
