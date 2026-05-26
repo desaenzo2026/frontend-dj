@@ -209,7 +209,7 @@ export default function PhotoUploadPage() {
           {successCount > 0 && (
             <div className="photo-upload-success">
               <CheckCircleIcon style={{ width: 24, height: 24 }} />
-              <span>¡{successCount === 1 ? 'Foto subida' : `${successCount} fotos subidas`}! Ya aparecen en la pantalla.</span>
+              <span>¡{successCount === 1 ? 'Foto enviada' : `${successCount} fotos enviadas`}! Aparecerán en la pantalla una vez aprobadas.</span>
             </div>
           )}
 

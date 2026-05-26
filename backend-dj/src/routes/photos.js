@@ -112,12 +112,87 @@ router.post('/:eventId', upload.array('photo', 10), async (req, res, next) => {
       const photo = rows[0];
       photos.push(photo);
 
-      // Emit to projector screens
+      // Notify DJ moderation panel — photo waits for approval
       const io = req.app.get('io');
-      io.to(`photowall:${eventId}`).emit('photo:new', photo);
+      io.to(`moderation:${eventId}`).emit('photo:pending', photo);
     }
 
     res.status(201).json(photos.length === 1 ? photos[0] : photos);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── PROTECTED: Get pending photos for moderation ────────────────────────────
+router.get('/:eventId/pending', auth, async (req, res, next) => {
+  try {
+    const { eventId } = req.params;
+    const { rows } = await pool.query(
+      `SELECT * FROM event_photos
+       WHERE event_id = $1 AND approved = false
+       ORDER BY created_at ASC`,
+      [eventId]
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── PROTECTED: Approve a photo ───────────────────────────────────────────────
+router.patch('/:eventId/:photoId/approve', auth, async (req, res, next) => {
+  try {
+    const { eventId, photoId } = req.params;
+    const { rows } = await pool.query(
+      `UPDATE event_photos
+       SET approved = true
+       WHERE id = $1 AND event_id = $2
+       RETURNING *`,
+      [photoId, eventId]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Foto no encontrada' });
+
+    const io = req.app.get('io');
+    io.to(`photowall:${eventId}`).emit('photo:new', rows[0]);
+
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── PUBLIC: Report a photo ────────────────────────────────────────────────────
+const REPORT_THRESHOLD = Number(process.env.PHOTO_REPORT_THRESHOLD || 3);
+
+router.post('/:eventId/:photoId/report', async (req, res, next) => {
+  try {
+    const { eventId, photoId } = req.params;
+    const { rows } = await pool.query(
+      `UPDATE event_photos
+       SET reports = reports + 1
+       WHERE id = $1 AND event_id = $2 AND approved = true
+       RETURNING id, reports, filename`,
+      [photoId, eventId]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Foto no encontrada' });
+
+    const photo = rows[0];
+
+    if (photo.reports >= REPORT_THRESHOLD) {
+      await pool.query(
+        `UPDATE event_photos SET approved = false WHERE id = $1`,
+        [photoId]
+      );
+      const io = req.app.get('io');
+      io.to(`photowall:${eventId}`).emit('photo:removed', { id: photoId });
+      io.to(`moderation:${eventId}`).emit('photo:pending',
+        (await pool.query('SELECT * FROM event_photos WHERE id=$1', [photoId])).rows[0]
+      );
+    }
+
+    res.json({ reported: true, reports: photo.reports });
   } catch (err) {
     next(err);
   }

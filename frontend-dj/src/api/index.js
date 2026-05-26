@@ -87,9 +87,12 @@ export const loginDJ = (username, password) => post('/auth/login', { username, p
 export const searchYoutube = (q) => get(`/search?q=${encodeURIComponent(q)}`);
 
 // ─── Photos (Photo Wall) ──────────────────────────
-export const fetchPhotos = (eventId) => get(`/photos/${eventId}`);
-export const buildPhotoDownloadUrl = (eventId, photoId) => `${BASE}/photos/${eventId}/${photoId}/download`;
-export const buildAllPhotosDownloadUrl = (eventId) => `${BASE}/photos/${eventId}/download/all`;
+export const fetchPhotos        = (eventId)          => get(`/photos/${eventId}`);
+export const fetchPendingPhotos = (eventId)          => get(`/photos/${eventId}/pending`);
+export const approvePhoto       = (eventId, photoId) => request('PATCH', `/photos/${eventId}/${photoId}/approve`);
+export const reportPhoto        = (eventId, photoId) => post(`/photos/${eventId}/${photoId}/report`, {});
+export const buildPhotoDownloadUrl    = (eventId, photoId) => `${BASE}/photos/${eventId}/${photoId}/download`;
+export const buildAllPhotosDownloadUrl = (eventId)         => `${BASE}/photos/${eventId}/download/all`;
 
 export async function uploadPhoto(eventId, files, uploadedBy) {
   const formData = new FormData();

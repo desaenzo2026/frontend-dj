@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { fetchPhotos, fetchEvent } from '../api';
+import { fetchPhotos, fetchEvent, deletePhoto } from '../api';
 import { useSocket } from '../context/SocketContext';
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
@@ -15,6 +15,7 @@ export default function PhotoWallPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [eventName, setEventName] = useState('');
   const [imageReady, setImageReady] = useState(false);
+  const [hiding, setHiding] = useState(false);
   const intervalRef = useRef(null);
   const preloadedRef = useRef(new Set());
 
@@ -93,6 +94,19 @@ export default function PhotoWallPage() {
 
   const currentPhoto = photos[currentIndex];
 
+  const handleHide = async () => {
+    if (!currentPhoto || hiding) return;
+    setHiding(true);
+    try {
+      await deletePhoto(eventId, currentPhoto.id);
+      setPhotos(prev => prev.filter(p => p.id !== currentPhoto.id));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setHiding(false);
+    }
+  };
+
   return (
     <div className="photowall-screen">
       {/* Logo branding overlay */}
@@ -125,6 +139,14 @@ export default function PhotoWallPage() {
               onLoad={() => setImageReady(true)}
             />
             {eventName && <p className="photowall-event-name">{eventName}</p>}
+            <button
+              className="photowall-hide-btn"
+              onClick={handleHide}
+              disabled={hiding}
+              title="Ocultar esta foto"
+            >
+              {hiding ? '...' : '✕ Ocultar'}
+            </button>
           </div>
         ) : (
           <div className="photowall-empty">

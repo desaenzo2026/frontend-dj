@@ -10,6 +10,7 @@ import LiveRequestsPage from './pages/LiveRequestsPage';
 import SharedListPage from './pages/SharedListPage';
 import PhotoWallPage from './pages/PhotoWallPage';
 import PhotoUploadPage from './pages/PhotoUploadPage';
+import PhotoModerationPage from './pages/PhotoModerationPage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/share/:token"    element={<SharedListPage />} />
             <Route path="/photowall/:eventId" element={<ProtectedRoute><PhotoWallPage /></ProtectedRoute>} />
             <Route path="/photos/upload/:eventId" element={<PhotoUploadPage />} />
+            <Route path="/moderation/:eventId" element={<ProtectedRoute><PhotoModerationPage /></ProtectedRoute>} />
           </Routes>
         </div>
       </SocketProvider>

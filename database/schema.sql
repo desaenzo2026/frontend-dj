@@ -117,7 +117,8 @@ CREATE TABLE IF NOT EXISTS event_photos (
   filename      VARCHAR(255) NOT NULL,
   original_name VARCHAR(255),
   uploaded_by   VARCHAR(100),
-  approved      BOOLEAN      NOT NULL DEFAULT true,
+  approved      BOOLEAN      NOT NULL DEFAULT false,
+  reports       INTEGER      NOT NULL DEFAULT 0,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 

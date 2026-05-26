@@ -593,6 +593,146 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   backdrop-filter: blur(4px);
 }
 
+.photowall-hide-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .2s;
+  z-index: 10;
+}
+.photowall-photo-wrapper:hover .photowall-hide-btn { opacity: 1; }
+.photowall-hide-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── Photo Moderation Page ────────────────────── */
+.mod-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.mod-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.mod-badge {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.mod-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+.mod-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+.mod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.mod-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid transparent;
+}
+.mod-card--reported {
+  border-color: #f59e0b;
+}
+.mod-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+  background: var(--surface2);
+}
+.mod-card-info {
+  padding: 8px 10px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mod-uploader {
+  font-size: .8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+.mod-reports {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: #d97706;
+  white-space: nowrap;
+}
+.mod-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+.mod-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 4px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.mod-btn:disabled { opacity: .5; cursor: not-allowed; }
+.mod-btn--approve {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.mod-btn--approve:hover:not(:disabled) { background: #bbf7d0; }
+.mod-btn--reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.mod-btn--reject:hover:not(:disabled) { background: #fecaca; }
+
+
+
 /* ─── Photo Upload Page (Public, mobile) ───────── */
 .photo-upload-page {
   min-height: 100vh;

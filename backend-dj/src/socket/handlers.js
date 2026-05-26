@@ -28,9 +28,17 @@ module.exports = function registerSocketHandlers(io) {
       }
     });
 
+    // Join the DJ moderation room
+    socket.on('join:moderation', (eventId) => {
+      if (typeof eventId === 'string' && /^[0-9a-f-]{36}$/.test(eventId)) {
+        socket.join(`moderation:${eventId}`);
+      }
+    });
+
     socket.on('leave:event', (eventId) => socket.leave(`event:${eventId}`));
     socket.on('leave:list',  (listId)  => socket.leave(`list:${listId}`));
     socket.on('leave:photowall', (eventId) => socket.leave(`photowall:${eventId}`));
+    socket.on('leave:moderation', (eventId) => socket.leave(`moderation:${eventId}`));
 
     socket.on('disconnect', () => {
       // Socket.IO cleans up rooms automatically
